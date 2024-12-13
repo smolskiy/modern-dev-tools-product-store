@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOAP & REST Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label { display: block; margin: 10px 0 5px; }
+        input, button, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; }
+        button { cursor: pointer; }
+        .result { white-space: pre-wrap; background: #f4f4f4; padding: 10px; border: 1px solid #ddd; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<h1>SOAP & REST Client</h1>
+
+<!-- Select Service Type -->
+<label for="serviceType">Choose Service Type:</label>
+<select id="serviceType">
+    <option value="rest">REST</option>
+    <option value="soap">SOAP</option>
+</select>
+
+<!-- Add Product -->
+<h2>Add Product</h2>
+<label for="addName">Name:</label>
+<input type="text" id="addName" placeholder="Product Name">
+<label for="addPrice">Price:</label>
+<input type="number" id="addPrice" placeholder="Product Price">
+<button onclick="addProduct()">Add Product</button>
+
+<!-- Get All Products -->
+<h2>Get All Products</h2>
+<button onclick="getAllProducts()">Get All Products</button>
+
+<!-- Update Product -->
+<h2>Update Product</h2>
+<label for="updateId">Product ID:</label>
+<input type="number" id="updateId" placeholder="Product ID">
+<label for="updateName">Name:</label>
+<input type="text" id="updateName" placeholder="New Name">
+<label for="updatePrice">Price:</label>
+<input type="number" id="updatePrice" placeholder="New Price">
+<button onclick="updateProduct()">Update Product</button>
+
+<!-- Delete Product -->
+<h2>Delete Product</h2>
+<label for="deleteId">Product ID:</label>
+<input type="number" id="deleteId" placeholder="Product ID">
+<button onclick="deleteProduct()">Delete Product</button>
+
+<!-- Result Display -->
+<div class="result" id="result">Result will be displayed here...</div>
+
+<script>
+    const baseUrlRest = "http://localhost:8081/products";
+    const baseUrlSoap = "http://localhost:8082/soap";
+
+    function displayResult(data) {
+        document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function addProduct() {
+        const name = document.getElementById("addName").value;
+        const price = document.getElementById("addPrice").value;
+
+        const serviceType = document.getElementById("serviceType").value;
+
+        if (serviceType === "rest") {
+            const response = await fetch(baseUrlRest, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, price }),
+            });
+            const data = await response.json();
+            displayResult(data);
+        } else {
+            const soapRequest = `
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                        <soapenv:Body>
+                            <ProductOperation>
+                                <action>add</action>
+                                <product>
+                                    <name>${name}</name>
+                                    <price>${price}</price>
+                                </product>
+                            </ProductOperation>
+                        </soapenv:Body>
+                    </soapenv:Envelope>`;
+            const response = await fetch(baseUrlSoap, {
+                method: "POST",
+                headers: { "Content-Type": "text/xml" },
+                body: soapRequest,
+            });
+            const data = await response.text();
+            displayResult(data);
+        }
+    }
+
+    async function getAllProducts() {
+        const serviceType = document.getElementById("serviceType").value;
+
+        if (serviceType === "rest") {
+            const response = await fetch(baseUrlRest);
+            const data = await response.json();
+            displayResult(data);
+        } else {
+            const soapRequest = `
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                        <soapenv:Body>
+                            <ProductOperation>
+                                <action>getAll</action>
+                            </ProductOperation>
+                        </soapenv:Body>
+                    </soapenv:Envelope>`;
+            const response = await fetch(baseUrlSoap, {
+                method: "POST",
+                headers: { "Content-Type": "text/xml" },
+                body: soapRequest,
+            });
+            const data = await response.text();
+            displayResult(data);
+        }
+    }
+
+    async function updateProduct() {
+        const id = document.getElementById("updateId").value;
+        const name = document.getElementById("updateName").value;
+        const price = document.getElementById("updatePrice").value;
+
+        const serviceType = document.getElementById("serviceType").value;
+
+        if (serviceType === "rest") {
+            const response = await fetch(`${baseUrlRest}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, price }),
+            });
+            const data = await response.json();
+            displayResult(data);
+        } else {
+            const soapRequest = `
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                        <soapenv:Body>
+                            <ProductOperation>
+                                <action>update</action>
+                                <product>
+                                    <id>${id}</id>
+                                    <name>${name}</name>
+                                    <price>${price}</price>
+                                </product>
+                            </ProductOperation>
+                        </soapenv:Body>
+                    </soapenv:Envelope>`;
+            const response = await fetch(baseUrlSoap, {
+                method: "POST",
+                headers: { "Content-Type": "text/xml" },
+                body: soapRequest,
+            });
+            const data = await response.text();
+            displayResult(data);
+        }
+    }
+
+    async function deleteProduct() {
+        const id = document.getElementById("deleteId").value;
+
+        const serviceType = document.getElementById("serviceType").value;
+
+        if (serviceType === "rest") {
+            const response = await fetch(`${baseUrlRest}/${id}`, {
+                method: "DELETE",
+            });
+            displayResult({ message: `Product with ID ${id} deleted.` });
+        } else {
+            const soapRequest = `
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                        <soapenv:Body>
+                            <ProductOperation>
+                                <action>delete</action>
+                                <product>
+                                    <id>${id}</id>
+                                </product>
+                            </ProductOperation>
+                        </soapenv:Body>
+                    </soapenv:Envelope>`;
+            const response = await fetch(baseUrlSoap, {
+                method: "POST",
+                headers: { "Content-Type": "text/xml" },
+                body: soapRequest,
+            });
+            const data = await response.text();
+            displayResult(data);
+        }
+    }
+</script>
+</body>
+</html>

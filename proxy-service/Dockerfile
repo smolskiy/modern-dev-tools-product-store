@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # Компилируйте приложение для Linux
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o catalog-service ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o proxy-service ./cmd/main.go
 
 # Используйте минимальный образ для запуска
 FROM alpine:3.18
@@ -23,10 +23,10 @@ WORKDIR /microservice
 RUN apk update && apk --no-cache add ca-certificates
 
 # Копируйте скомпилированное приложение из предыдущего этапа
-COPY --from=builder /microservice/catalog-service .
+COPY --from=builder /microservice/proxy-service .
 
 # Установите права на выполнение
-RUN chmod +x ./catalog-service
+RUN chmod +x ./proxy-service
 
 # Укажите команду для запуска приложения
-CMD ["./catalog-service"]
+CMD ["./proxy-service"]

@@ -1,4 +1,9 @@
 services:
+  web-client:
+    build:
+      context: ./web-client
+    ports:
+      - "8080:80"
   catalog-service:
     build: ./catalog-service
     platform: linux/amd64
@@ -10,12 +15,14 @@ services:
     restart: unless-stopped
     environment:
       - DB_HOST=catalog-db
+      - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=secret
       - DB_NAME=catalog
+      - DB_DSN=postgresql://postgres:secret@catalog-db:5432/catalog
     depends_on:
       - catalog-db  # Сначала должен быть запущен сервис базы данных
-    command: ["./catalog-service"]
+    command: [ "./catalog-service" ]
 
   catalog-db:
     image: postgres:13
@@ -29,7 +36,8 @@ services:
     networks:
       - microservice_default
     volumes:
-      - catalog-db-data:/var/lib/postgresql/data  # Персистентные данные для базы
+      - catalog-db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   order-service:
     build: ./order-service
@@ -41,26 +49,27 @@ services:
       - microservice_default
     restart: unless-stopped
     environment:
-      - DB_HOST=order-db
-      - DB_USER=mysql
+      - DB_HOST=catalog-db
+      - DB_PORT=5432
+      - DB_USER=postgres
       - DB_PASSWORD=secret
-      - DB_NAME=orders
+      - DB_NAME=catalog
+      - DB_DSN=postgresql://postgres:secret@catalog-db:5432/catalog
     depends_on:
-      - order-db  # Сначала должен быть запущен сервис базы данных
-    command: ["./order-service"]
-  order-db:
-    image: mysql:8
+      - catalog-db  # Сначала должен быть запущен сервис базы данных
+    command: [ "./order-service" ]
 
-    container_name: order-db
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: orders
+  proxy-service:
+    build: ./proxy-service
+    platform: linux/amd64
+    container_name: proxy-service
     ports:
-      - "3306:3306"  # Пробрасываем порт для доступа к базе данных
+      - "8083:8080"
     networks:
       - microservice_default
-    volumes:
-      - order-db-data:/var/lib/mysql  # Персистентные данные для базы
+    restart: unless-stopped
+    depends_on:
+        - order-service
 
 networks:
   microservice_default:
