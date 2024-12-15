@@ -39,12 +39,12 @@ services:
       - catalog-db-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  order-service:
-    build: ./order-service
+  soap-service:
+    build: soap-service
     platform: linux/amd64
-    container_name: order-service
+    container_name: soap-service
     ports:
-      - "8082:8080"  # Пробрасываем порт для доступа к Order Service
+      - "8082:8080"  # Пробрасываем порт для доступа к Soap Service
     networks:
       - microservice_default
     restart: unless-stopped
@@ -57,7 +57,7 @@ services:
       - DB_DSN=postgresql://postgres:secret@catalog-db:5432/catalog
     depends_on:
       - catalog-db  # Сначала должен быть запущен сервис базы данных
-    command: [ "./order-service" ]
+    command: [ "./soap-service" ]
 
   proxy-service:
     build: ./proxy-service
@@ -69,7 +69,7 @@ services:
       - microservice_default
     restart: unless-stopped
     depends_on:
-        - order-service
+        - soap-service
 
 networks:
   microservice_default:
@@ -77,4 +77,3 @@ networks:
 
 volumes:
   catalog-db-data:
-  order-db-data:

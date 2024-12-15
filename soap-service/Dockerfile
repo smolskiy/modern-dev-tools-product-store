@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # Компилируйте приложение для Linux
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o order-service ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o soap-service ./cmd/main.go
 
 # Используйте минимальный образ для запуска
 FROM alpine:latest
@@ -23,7 +23,7 @@ WORKDIR /microservice
 COPY --from=builder /microservice/order-service .
 
 # Установите права на выполнение
-RUN chmod +x ./order-service
+RUN chmod +x ./soap-service
 
 # Укажите команду для запуска приложения
 CMD ["./order-service"]

@@ -86,6 +86,32 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(products)
 }
 
+// Обработчик для получения товара по ID
+func getProductByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r) // Извлекаем параметры из URL
+	idStr := vars["id"] // Получаем ID из URL
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Некорректный формат ID", http.StatusBadRequest)
+		return
+	}
+
+	var product Product
+	err = db.QueryRow("SELECT id, name, price FROM products WHERE id = $1", id).
+		Scan(&product.ID, &product.Name, &product.Price)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Товар не найден", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, "Ошибка чтения из базы данных", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product)
+}
+
 // Обработчик для добавления нового товара
 func addProduct(w http.ResponseWriter, r *http.Request) {
 	var product Product
@@ -174,6 +200,7 @@ func main() {
 
 	// Определяем маршруты
 	router.HandleFunc("/products", getProducts).Methods("GET")
+	router.HandleFunc("/products/{id:[0-9]+}", getProductByID).Methods("GET") // Новый маршрут для получения товара по ID
 	router.HandleFunc("/products", addProduct).Methods("POST")
 	router.HandleFunc("/products/{id:[0-9]+}", updateProduct).Methods("PUT")    // Метод PUT для обновления
 	router.HandleFunc("/products/{id:[0-9]+}", deleteProduct).Methods("DELETE") // Метод DELETE для удаления

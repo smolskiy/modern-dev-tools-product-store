@@ -34,6 +34,13 @@
 <h2>Get All Products</h2>
 <button onclick="getAllProducts()">Get All Products</button>
 
+
+<!-- Get Product by ID -->
+<h2>Get Product by ID</h2>
+<label for="productId">Product ID:</label>
+<input type="number" id="productId" placeholder="Product ID">
+<button onclick="getProductById()">Get Product</button>
+
 <!-- Update Product -->
 <h2>Update Product</h2>
 <label for="updateId">Product ID:</label>
@@ -162,6 +169,37 @@
             displayResult(data);
         }
     }
+
+    async function getProductById() {
+        const id = document.getElementById("productId").value;
+        const serviceType = document.getElementById("serviceType").value;
+
+        if (serviceType === "rest") {
+            const response = await fetch(`${baseUrlRest}/${id}`);
+            const data = await response.json();
+            displayResult(data);
+        } else {
+            const soapRequest = `
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                    <soapenv:Body>
+                        <ProductOperation>
+                            <action>get</action>
+                            <product>
+                                <id>${id}</id>
+                            </product>
+                        </ProductOperation>
+                    </soapenv:Body>
+                </soapenv:Envelope>`;
+            const response = await fetch(baseUrlSoap, {
+                method: "POST",
+                headers: { "Content-Type": "text/xml" },
+                body: soapRequest,
+            });
+            const data = await response.text();
+            displayResult(data);
+        }
+    }
+
 
     async function deleteProduct() {
         const id = document.getElementById("deleteId").value;
