@@ -20,6 +20,9 @@
 ├── soap-service          # SOAP-сервис для управления товарами
 │   ├── main.go           # SOAP-реализация на Go
 │   └── Dockerfile        # Dockerfile для soap-service
+├── proxy-service         # сервис для управления запросами и перенаправления в soap-service для управления товарами
+│   ├── main.go           # SOAP-реализация на Go
+│   └── Dockerfile        # Dockerfile для soap-service
 ├── web-client            # Простой веб-клиент на HTML
 │   └── client.html       # Веб-клиент для взаимодействия с API
 ├── docker-compose.yml    # Docker Compose файл для оркестрации сервисов
