@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # Компилируйте приложение для Linux
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o catalog-service ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o employee-service ./cmd/main.go
 
 # Используйте минимальный образ для запуска
 FROM alpine:3.18
@@ -26,7 +26,7 @@ RUN apk update && apk --no-cache add ca-certificates
 COPY --from=builder /microservice/catalog-service .
 
 # Установите права на выполнение
-RUN chmod +x ./catalog-service
+RUN chmod +x ./employee-service
 
 # Укажите команду для запуска приложения
 CMD ["./catalog-service"]

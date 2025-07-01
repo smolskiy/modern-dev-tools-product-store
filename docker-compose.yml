@@ -1,62 +1,130 @@
+version: "3.8"
+
 services:
   web-client:
     build:
       context: ./web-client
     ports:
       - "8080:80"
-  catalog-service:
-    build: ./catalog-service
+
+  employee-service:
+    build: ./employee-service
     platform: linux/amd64
-    container_name: catalog-service
+    container_name: employee-service
     ports:
-      - "8081:8080"  # Пробрасываем порт для доступа к Catalog Service
+      - "8081:8080"
     networks:
       - microservice_default
     restart: unless-stopped
     environment:
-      - DB_HOST=catalog-db
+      - DB_HOST=main-db
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=secret
-      - DB_NAME=catalog
-      - DB_DSN=postgresql://postgres:secret@catalog-db:5432/catalog
+      - DB_NAME=hrms
+      - DB_DSN=postgresql://postgres:secret@main-db:5432/hrms
     depends_on:
-      - catalog-db  # Сначала должен быть запущен сервис базы данных
-    command: [ "./catalog-service" ]
+      - main-db
+    command: [ "./employee-service" ]
 
-  catalog-db:
-    image: postgres:13
-    container_name: catalog-db
-    environment:
-      POSTGRES_DB: catalog
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
+  leave-service:
+    build: ./leave-service
+    platform: linux/amd64
+    container_name: leave-service
     ports:
-      - "5432:5432"  # Пробрасываем порт для доступа к базе данных
+      - "8084:8080"
     networks:
       - microservice_default
-    volumes:
-      - catalog-db-data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    environment:
+      - DB_HOST=main-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=hrms
+      - DB_DSN=postgresql://postgres:secret@main-db:5432/hrms
+    depends_on:
+      - main-db
+    command: [ "./leave-service" ]
+
+  department-service:
+    build: ./department-service
+    platform: linux/amd64
+    container_name: department-service
+    ports:
+      - "8085:8080"
+    networks:
+      - microservice_default
+    restart: unless-stopped
+    environment:
+      - DB_HOST=main-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=hrms
+      - DB_DSN=postgresql://postgres:secret@main-db:5432/hrms
+    depends_on:
+      - main-db
+    command: [ "./department-service" ]
+
+  auth-service:
+    build: ./auth-service
+    platform: linux/amd64
+    container_name: auth-service
+    ports:
+      - "8086:8080"
+    networks:
+      - microservice_default
+    restart: unless-stopped
+    environment:
+      - DB_HOST=main-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=hrms
+      - DB_DSN=postgresql://postgres:secret@main-db:5432/hrms
+    depends_on:
+      - main-db
+    command: [ "./auth-service" ]
+
+  directory-service:
+    build: ./directory-service
+    platform: linux/amd64
+    container_name: directory-service
+    ports:
+      - "8087:8080"
+    networks:
+      - microservice_default
+    restart: unless-stopped
+    environment:
+      - DB_HOST=main-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=hrms
+      - DB_DSN=postgresql://postgres:secret@main-db:5432/hrms
+    depends_on:
+      - main-db
+    command: [ "./directory-service" ]
 
   soap-service:
-    build: soap-service
+    build: ./soap-service
     platform: linux/amd64
     container_name: soap-service
     ports:
-      - "8082:8080"  # Пробрасываем порт для доступа к Soap Service
+      - "8082:8080"
     networks:
       - microservice_default
     restart: unless-stopped
     environment:
-      - DB_HOST=catalog-db
+      - DB_HOST=main-db
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=secret
-      - DB_NAME=catalog
-      - DB_DSN=postgresql://postgres:secret@catalog-db:5432/catalog
+      - DB_NAME=hrms
+      - DB_DSN=postgresql://postgres:secret@main-db:5432/hrms
     depends_on:
-      - catalog-db  # Сначала должен быть запущен сервис базы данных
+      - main-db
     command: [ "./soap-service" ]
 
   proxy-service:
@@ -69,11 +137,31 @@ services:
       - microservice_default
     restart: unless-stopped
     depends_on:
-        - soap-service
+      - soap-service
+      - employee-service
+      - leave-service
+      - department-service
+      - auth-service
+      - directory-service
+
+  main-db:
+    image: postgres:13
+    container_name: main-db
+    environment:
+      POSTGRES_DB: hrms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    networks:
+      - microservice_default
+    volumes:
+      - main-db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 networks:
   microservice_default:
     driver: bridge
 
 volumes:
-  catalog-db-data:
+  main-db-data:

@@ -1,0 +1,54 @@
+openapi: 3.0.0
+info:
+  title: Leave Service API
+  version: 1.0.0
+paths:
+  /leaves:
+    get:
+      summary: Получить список заявок на отпуск
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Создать заявку на отпуск
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Leave'
+      responses:
+        '201':
+          description: Created
+  /leaves/{id}/status:
+    put:
+      summary: Обновить статус заявки
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    Leave:
+      type: object
+      properties:
+        id: { type: integer }
+        employee_id: { type: integer }
+        type: { type: string }
+        status: { type: string }
+        date_from: { type: string, format: date }
+        date_to: { type: string, format: date }
+        created_at: { type: string, format: date-time }

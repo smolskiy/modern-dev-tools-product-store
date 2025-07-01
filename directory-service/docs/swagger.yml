@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: Directory Service API
+  version: 1.0.0
+paths:
+  /positions:
+    get:
+      summary: Получить список должностей
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Добавить должность
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+      responses:
+        '201': { description: Created }
+  /positions/{id}:
+    put:
+      summary: Обновить должность
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Удалить должность
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204': { description: No Content }
+components:
+  schemas:
+    Position:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }

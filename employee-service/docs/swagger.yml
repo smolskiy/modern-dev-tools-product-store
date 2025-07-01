@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  title: Employee Service API
+  version: 1.0.0
+paths:
+  /employees:
+    get:
+      summary: Получить список сотрудников
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Добавить сотрудника
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '201':
+          description: Created
+  /employees/{id}:
+    get:
+      summary: Получить сотрудника по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not Found }
+    put:
+      summary: Обновить данные сотрудника
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Удалить сотрудника
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204': { description: No Content }
+components:
+  schemas:
+    Employee:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        department: { type: string }
+        position: { type: string }

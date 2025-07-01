@@ -1,0 +1,67 @@
+openapi: 3.0.0
+info:
+  title: Department Service API
+  version: 1.0.0
+paths:
+  /departments:
+    get:
+      summary: Получить список отделов
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Создать отдел
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Department'
+      responses:
+        '201':
+          description: Created
+  /departments/{id}:
+    get:
+      summary: Получить отдел по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not Found }
+    put:
+      summary: Обновить отдел
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Department'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Удалить отдел
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204': { description: No Content }
+components:
+  schemas:
+    Department:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        parent_id: { type: integer, nullable: true }
+        chief_id: { type: integer, nullable: true }
+        description: { type: string }
